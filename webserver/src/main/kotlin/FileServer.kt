@@ -48,14 +48,14 @@ class FileServer {
 
             println("receive from ${socket.remoteSocketAddress}  > clientRequest $clientRequest")
             val method = clientRequest.substringBefore(' ') // хотел разные случаи для разных методов,
-
+            var serverResponse = HTTPSAnswers.BAD_REQUEST_400.answer
             when (method) {
-                "GET" -> {
+                 "GET" -> {
                     val path = clientRequest.drop(4).dropLast(9)
-                    val serverResponse = getMethod(path,fs)
-                    sendAnswer(s,serverResponse)
+                    serverResponse = getMethod(path,fs)
                 }
             }
+            sendAnswer(s,serverResponse)
         }
     }
 
@@ -87,6 +87,11 @@ class FileServer {
         ),
         OK_200(
             "HTTP/1.0 200 OK\r\n" +
+                    "Server: FileServer\r\n" +
+                    "\r\n"
+        ),
+        BAD_REQUEST_400(
+            "HTTP/1.0 400 Bad Request\r\n" +
                     "Server: FileServer\r\n" +
                     "\r\n"
         )
