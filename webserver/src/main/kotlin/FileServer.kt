@@ -1,6 +1,9 @@
 import ru.sber.filesystem.VFilesystem
+import ru.sber.filesystem.VPath
 import java.io.IOException
+import java.io.PrintWriter
 import java.net.ServerSocket
+import java.net.Socket
 
 /**
  * A basic and very limited implementation of a file server that responds to GET
@@ -27,11 +30,12 @@ class FileServer {
          * ServerSocket object.
          */
         while (true) {
-
-            // TODO Delete this once you start working on your solution.
-            //throw new UnsupportedOperationException();
-
-            // TODO 1) Use socket.accept to get a Socket object
+            socket.use {
+                while (true) {
+                    val clientSocket = it.accept() // блокирующий вызов
+                    handle(clientSocket,fs)
+                }
+            }
 
 
             /*
@@ -65,6 +69,39 @@ class FileServer {
              *
              * Don't forget to close the output stream.
              */
+        }
+    }
+    private fun handle(socket: Socket,fs: VFilesystem) {
+        socket.use { s ->
+            // читаем от клиента сообщение
+            val reader = s.getInputStream().bufferedReader()
+            val clientRequest = reader.readLine()
+
+            println("receive from ${socket.remoteSocketAddress}  > clientRequest $clientRequest")
+
+            var path = clientRequest.drop(4)
+            path = path.dropLast(9)
+            println(path)
+
+            // отправляем ответ
+            val vPath = VPath(path)
+            println(fs.readFile(vPath))
+            val writer = PrintWriter(s.getOutputStream())
+            var serverResponse =""
+            if(fs.readFile(vPath)!=null) {
+                serverResponse = "HTTP/1.0 200 OK\r\n" +
+                        "Server: FileServer\r\n" +
+                        "\r\n" +
+                        fs.readFile(vPath)
+            }
+            else {
+                serverResponse = "HTTP/1.0 404 Not Found\r\n" +
+                        "Server: FileServer\r\n" +
+                        "\r\n"
+            }
+            println(serverResponse)
+            writer.println(serverResponse)
+            writer.flush()
         }
     }
 }
