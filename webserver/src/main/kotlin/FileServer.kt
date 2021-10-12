@@ -48,22 +48,35 @@ class FileServer {
 
             println("receive from ${socket.remoteSocketAddress}  > clientRequest $clientRequest")
             val method = clientRequest.substringBefore(' ') // хотел разные случаи для разных методов,
-                                                                    // но не придумал как можно красиво сделать
-            val path = clientRequest.drop(4).dropLast(9)
-            // отправляем ответ
-            val vPath = VPath(path)
-            val writer = PrintWriter(s.getOutputStream())
 
-            val serverResponse = if (fs.readFile(vPath) != null)
-                HTTPSAnswers.OK_200.answer +
-                        fs.readFile(vPath)
-            else
-                HTTPSAnswers.NOT_FOUND_404.answer
-
-            println("send to ${socket.remoteSocketAddress} > $serverResponse")
-            writer.println(serverResponse)
-            writer.flush()
+            when (method) {
+                "GET" -> {
+                    val path = clientRequest.drop(4).dropLast(9)
+                    val serverResponse = getMethod(path,fs)
+                    sendAnswer(s,serverResponse)
+                }
+            }
         }
+    }
+
+    private fun getMethod(path: String, fs: VFilesystem): String {
+        val vPath = VPath(path)
+
+        return if (fs.readFile(vPath) != null)
+            HTTPSAnswers.OK_200.answer +
+                    fs.readFile(vPath)
+        else
+            HTTPSAnswers.NOT_FOUND_404.answer
+
+    }
+
+    private fun sendAnswer(socket: Socket, serverResponse : String){
+
+        val writer = PrintWriter(socket.getOutputStream())
+        println("send to ${socket.remoteSocketAddress} > $serverResponse")
+        writer.println(serverResponse)
+        writer.flush()
+
     }
 
     enum class HTTPSAnswers(val answer: String) {
