@@ -51,7 +51,7 @@ class FileServer {
             var serverResponse = HTTPSAnswers.BAD_REQUEST_400.answer
             when (method) {
                  "GET" -> {
-                    val path = clientRequest.drop(4).dropLast(9)
+                    val path = clientRequest.drop(4).substringBefore(' ')
                     serverResponse = getMethod(path,fs)
                 }
             }
