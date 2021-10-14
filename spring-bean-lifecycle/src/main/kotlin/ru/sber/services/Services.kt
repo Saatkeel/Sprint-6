@@ -61,7 +61,6 @@ class BeanFactoryPostProcessorBean : BeanFactoryPostProcessorInterface {
 }
 
 interface BeanFactoryPostProcessorInterface {
-    @PostConstruct
     fun postConstruct()
 }
 
