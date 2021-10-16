@@ -26,7 +26,7 @@ class ConditionalService : ConditionalInterface {
 @Component
 class AnotherConditionalService : ConditionalInterface {
     override fun toString(): String {
-        return "ConditionalService"
+        return "AnotherConditionalService"
     }
 }
 
